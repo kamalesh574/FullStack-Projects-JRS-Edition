@@ -83,6 +83,15 @@ public class ContactService {
         return suggestions;
     }
 
+    private boolean isDuplicatePhone(String phone) {
+        for (Contact c : contacts) {
+            if (c.getPhone().equals(phone)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void importFromCSV(String fileName) {
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
@@ -103,7 +112,11 @@ public class ContactService {
                     String email = data[3];
 
                     Contact contact = new Contact(id, name, phone, email);
-                    contacts.add(contact);
+                    if (!isDuplicatePhone(phone)) {
+                        contacts.add(contact);
+                    } else {
+                        System.out.println("Duplicate phone skipped: " + phone);
+                    }
 
                     if (id >= idCounter) {
                         idCounter = id + 1;
