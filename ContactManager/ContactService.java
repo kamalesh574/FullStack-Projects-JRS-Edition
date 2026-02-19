@@ -1,21 +1,21 @@
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.util.*;
 
 public class ContactService {
 
-    private static final String FILE_NAME = "contacts.dat";
+    private static final String FILE_NAME = "contacts.json";
     private List<Contact> contacts = new ArrayList<>();
     private int idCounter = 1;
 
     public void saveToFile() {
-        try (ObjectOutputStream oos
-                = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
-
-            oos.writeObject(contacts);
-
-        } catch (IOException e) {
-            System.out.println("Error saving contacts: " + e.getMessage());
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writerWithDefaultPrettyPrinter()
+                    .writeValue(new File(FILE_NAME), contacts);
+        } catch (Exception e) {
+            System.out.println("Error saving JSON: " + e.getMessage());
         }
     }
 
@@ -23,24 +23,27 @@ public class ContactService {
 
         File file = new File(FILE_NAME);
 
-        if (!file.exists()) {
-            return; // First time run, no file yet
+        if (!file.exists() || file.length() == 0) {
+            return; // First time run, no file yet or empty file
         }
 
-        try (ObjectInputStream ois
-                = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
-
-            contacts = (List<Contact>) ois.readObject();
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            // Read the JSON array into a List of Contact objects
+            contacts = mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(List.class, Contact.class));
 
             // Reset idCounter properly
-            for (Contact c : contacts) {
-                if (c.getId() >= idCounter) {
-                    idCounter = c.getId() + 1;
-                }
+            if (!contacts.isEmpty()) {
+                idCounter = contacts.stream()
+                        .mapToInt(Contact::getId)
+                        .max()
+                        .orElse(0) + 1;
+            } else {
+                idCounter = 1; // If contacts list is empty, reset idCounter to 1
             }
-
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             System.out.println("Error loading contacts: " + e.getMessage());
+            contacts = new ArrayList<>(); // Initialize an empty list if loading fails
         }
     }
 
