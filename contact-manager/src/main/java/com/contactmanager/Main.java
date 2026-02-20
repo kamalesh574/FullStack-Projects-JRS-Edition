@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Scanner;
 
 import com.contactmanager.model.Contact;
+import com.contactmanager.model.Role;
+import com.contactmanager.service.AuthService;
 import com.contactmanager.service.ContactService;
 import com.contactmanager.utils.Colors;
 import com.contactmanager.utils.PerformanceTracker;
@@ -15,14 +17,22 @@ public class Main {
 
         Scanner sc = new Scanner(System.in);
 
-        // 🔐 STEP 1: PASSWORD PROTECTION
-        System.out.print("Enter Admin Password: ");
+        AuthService authService = new AuthService();
+
+        System.out.print("Username: ");
+        String username = sc.nextLine();
+
+        System.out.print("Password: ");
         String password = sc.nextLine();
 
-        if (!password.equals("admin123")) {
-            System.out.println(Colors.RED + "Wrong Password! Exiting..." + Colors.RESET);
+        Role role = authService.login(username, password);
+
+        if (role == null) {
+            System.out.println("Invalid credentials!");
             return;
         }
+
+        System.out.println("Login successful! Role: " + role);
 
         // 🧠 STEP 2: CREATE OBJECTS
         ContactService service = new ContactService();
@@ -49,6 +59,12 @@ public class Main {
             switch (choice) {
 
                 case 1:
+
+                    if (role != Role.ADMIN) {
+                        System.out.println("Access denied! Admin only.");
+                        break;
+                    }
+                    // add logic here
                     System.out.print("Name: ");
                     String name = sc.nextLine();
                     System.out.print("Phone: ");
@@ -70,9 +86,15 @@ public class Main {
                     break;
 
                 case 3:
+
+                    if (role != Role.ADMIN) {
+                        System.out.println("Access denied! Admin only.");
+                        break;
+                    }
+                    // delete logic here
                     System.out.print("Enter ID to delete: ");
                     int id = sc.nextInt();
-
+                    sc.nextLine();
                     Contact deleted = service.deleteContact(id);
                     if (deleted != null) {
                         undoRedo.recordDelete(deleted);
@@ -113,11 +135,21 @@ public class Main {
                     }
                     break;
                 case 7:
+
+                    if (role != Role.ADMIN) {
+                        System.out.println("Access denied! Admin only.");
+                        break;
+                    }
                     System.out.print("Enter CSV file name: ");
                     String fileName = sc.nextLine();
                     service.importFromCSV(fileName);
                     break;
                 case 8:
+                    if (role != Role.ADMIN) {
+                        System.out.println("Access denied! Admin only.");
+                        break;
+                    }
+                    
                     service.exportToCSV("contacts.csv");
                     System.out.println(Colors.GREEN + "CSV Exported!" + Colors.RESET);
                     break;
