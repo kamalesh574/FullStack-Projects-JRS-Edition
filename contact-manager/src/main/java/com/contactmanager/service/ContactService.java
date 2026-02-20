@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.contactmanager.model.Contact;
 import com.contactmanager.model.SearchResult;
 import com.contactmanager.repository.ContactRepository;
@@ -35,17 +38,19 @@ public class ContactService {
                     .orElse(0) + 1;
         }
     }
+    private static final Logger logger
+            = LoggerFactory.getLogger(ContactService.class);
 
     public void addContact(String name, String phone, String email) {
         if (isDuplicatePhone(phone)) {
-            System.out.println("Duplicate phone number not allowed!");
+            logger.warn("Duplicate phone number attempted: {}", phone);
             return;
         }
-        totalAdds++;
-
         Contact contact = new Contact(idCounter++, name, phone, email);
         contacts.add(contact);
         repository.save(contacts);
+        logger.info("Contact added: {}", name);
+        totalAdds++;
     }
 
     public void importFromCSV(String fileName) {
@@ -58,7 +63,7 @@ public class ContactService {
             while ((line = br.readLine()) != null) {
 
                 String[] data = line.split(",");
-
+                logger.info("Import started from file: {}", fileName);
                 if (data.length == 4) {
 
                     int id = Integer.parseInt(data[0]);
@@ -76,7 +81,9 @@ public class ContactService {
                     } else {
                         System.out.println("Duplicate skipped: " + phone);
                     }
+                    logger.info("Import completed successfully");
                 }
+
             }
 
             repository.save(contacts); // Save after import
@@ -110,6 +117,7 @@ public class ContactService {
     }
 
     public List<Contact> smartSearch(String keyword) {
+        logger.debug("Search performed for keyword: {}", keyword);
         totalSearches++;
         searchFrequency.put(keyword,
                 searchFrequency.getOrDefault(keyword, 0) + 1);
@@ -183,6 +191,7 @@ public class ContactService {
             contacts.remove(toRemove);
             repository.save(contacts);
         }
+        logger.info("Contact deleted with ID: {}", id);
         totalDeletes++;
         return toRemove;
     }
