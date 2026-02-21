@@ -9,3 +9,14 @@
 .vscode/
 *.iml
 *.sub
+
+# Logs
+logs/
+*.log
+
+# Target folder
+target/
+
+# OS files
+.DS_Store
+Thumbs.db
