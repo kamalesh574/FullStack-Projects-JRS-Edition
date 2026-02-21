@@ -16,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import com.contactmanager.model.Contact;
 import com.contactmanager.model.SearchResult;
 import com.contactmanager.repository.ContactRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ContactService {
 
     private int totalAdds = 0;

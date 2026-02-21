@@ -7,7 +7,8 @@ import java.util.List;
 
 import com.contactmanager.model.Contact;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.springframework.stereotype.Repository;
+@Repository
 public class ContactRepository {
 
     private static final String FILE_NAME = "contacts.json";
