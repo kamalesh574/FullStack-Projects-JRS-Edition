@@ -1,34 +1,82 @@
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+  useEffect,
+} from "react";
+import { useAuth } from "./AuthContext";
+
+export type ActivityType = "CREATE" | "DELETE" | "IMPORT" | "EXPORT";
 
 export interface Activity {
   id: number;
-  message: string;
-  type: "CREATE" | "UPDATE" | "DELETE" | "LOGIN";
+  action: ActivityType;
+  description: string;
   timestamp: string;
 }
 
 interface ActivityContextType {
   activities: Activity[];
-  addActivity: (activity: Omit<Activity, "id" | "timestamp">) => void;
+  logActivity: (action: ActivityType, description: string) => void;
+  clearActivities: () => void;
 }
 
-const ActivityContext = createContext<ActivityContextType | undefined>(undefined);
+const ActivityContext = createContext<ActivityContextType | undefined>(
+  undefined
+);
 
-export const ActivityProvider = ({ children }: { children: React.ReactNode }) => {
+export const ActivityProvider = ({ children }: { children: ReactNode }) => {
+  const { auth } = useAuth();
+
+  const storageKey = auth.username
+    ? `activities_${auth.username}`
+    : "activities_guest";
+
   const [activities, setActivities] = useState<Activity[]>([]);
 
-  const addActivity = (activity: Omit<Activity, "id" | "timestamp">) => {
+  // ✅ Load activities when user changes
+  useEffect(() => {
+    if (!auth.username) {
+      setActivities([]);
+      return;
+    }
+
+    const stored = localStorage.getItem(storageKey);
+    setActivities(stored ? JSON.parse(stored) : []);
+  }, [auth.username, storageKey]);
+
+  // ✅ Save whenever activities change
+  useEffect(() => {
+    if (!auth.username) return;
+
+    localStorage.setItem(storageKey, JSON.stringify(activities));
+  }, [activities, auth.username, storageKey]);
+
+  const logActivity = (action: ActivityType, description: string) => {
+    if (!auth.username) return;
+
     const newActivity: Activity = {
       id: Date.now(),
-      ...activity,
+      action,
+      description,
       timestamp: new Date().toLocaleString(),
     };
 
     setActivities((prev) => [newActivity, ...prev]);
   };
 
+  const clearActivities = () => {
+    if (!auth.username) return;
+
+    setActivities([]);
+    localStorage.removeItem(storageKey);
+  };
+
   return (
-    <ActivityContext.Provider value={{ activities, addActivity }}>
+    <ActivityContext.Provider
+      value={{ activities, logActivity, clearActivities }}
+    >
       {children}
     </ActivityContext.Provider>
   );
@@ -36,6 +84,8 @@ export const ActivityProvider = ({ children }: { children: React.ReactNode }) =>
 
 export const useActivity = () => {
   const context = useContext(ActivityContext);
-  if (!context) throw new Error("useActivity must be used inside ActivityProvider");
+  if (!context) {
+    throw new Error("useActivity must be used inside ActivityProvider");
+  }
   return context;
 };

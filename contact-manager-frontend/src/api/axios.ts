@@ -4,11 +4,24 @@ const api = axios.create({
   baseURL: "http://localhost:8081",
 });
 
-export const setAuth = (username: string, password: string) => {
-  const token = btoa(`${username}:${password}`);
-  api.defaults.headers.common["Authorization"] = `Basic ${token}`;
+// ✅ Set Basic Auth header
+export const setAuth = (
+  username: string,
+  passwordOrToken: string,
+  isToken = false
+) => {
+  let encoded;
+
+  if (isToken) {
+    encoded = passwordOrToken;
+  } else {
+    encoded = btoa(`${username}:${passwordOrToken}`);
+  }
+
+  api.defaults.headers.common["Authorization"] = `Basic ${encoded}`;
 };
 
+// ✅ Clear auth header on logout
 export const clearAuth = () => {
   delete api.defaults.headers.common["Authorization"];
 };

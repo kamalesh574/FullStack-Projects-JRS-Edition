@@ -6,9 +6,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
 import Analytics from "./pages/Analytics.tsx";
 import Activity from "./pages/Activity.tsx";
-import DataManagement from "./pages/DataManagement.tsx";
-import Settings from "./pages/Settings.tsx";
-
+import AppLayout from "./components/layout/AppLayout";
 function App() {
   return (
     <BrowserRouter>
@@ -43,7 +41,9 @@ function App() {
           path="/analytics"
           element={
             <ProtectedRoute requiredRole="ADMIN">
-              <Analytics />
+              <MainLayout>
+                <Analytics />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -52,28 +52,29 @@ function App() {
           path="/activity"
           element={
             <ProtectedRoute requiredRole="ADMIN">
-              <Activity />
+             <MainLayout>
+                <Activity />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
 
-        <Route
-          path="/data"
-          element={
-            <ProtectedRoute requiredRole="ADMIN">
-              <DataManagement />
-            </ProtectedRoute>
-          }
-        />
+        
 
+       
         <Route
-          path="/settings"
           element={
             <ProtectedRoute>
-              <Settings />
+              <AppLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/contacts" element={<Contacts />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/activity" element={<Activity />} />
+          
+        </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

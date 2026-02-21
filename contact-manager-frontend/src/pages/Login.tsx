@@ -7,26 +7,43 @@ import { setAuth } from "../api/axios";
 const Login = () => {
   const navigate = useNavigate();
   const { setAuthState } = useAuth();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
 
   try {
+    setLoading(true);
+
+    // 🔥 Encode credentials manually
+    const encoded = btoa(`${username}:${password}`);
+
+    // Set axios header
     setAuth(username, password);
 
     const response = await api.get("/auth/me");
 
-    setAuthState({
+    const authData = {
       username: response.data.username,
       role: response.data.role,
-    });
+      token: encoded, // ✅ store encoded token
+    };
+
+    // Save in context
+    setAuthState(authData);
+
+    // Persist to localStorage
+    localStorage.setItem("auth", JSON.stringify(authData));
 
     navigate("/dashboard");
 
   } catch {
     alert("Invalid credentials");
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -44,6 +61,7 @@ const Login = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full p-3 rounded-lg bg-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
 
           <input
@@ -52,13 +70,15 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 rounded-lg bg-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 transition p-3 rounded-lg font-semibold"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 transition p-3 rounded-lg font-semibold disabled:opacity-50"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>

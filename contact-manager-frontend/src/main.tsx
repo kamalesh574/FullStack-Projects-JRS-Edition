@@ -4,13 +4,18 @@ import App from "./App.tsx";
 import { AuthProvider } from "./context/AuthContext";
 import "./index.css";
 import { Toaster } from "react-hot-toast";
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+
+import ReactDOM from "react-dom/client";
+import React from "react";
+
+import { ActivityProvider } from "./context/ActivityContext";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
     <AuthProvider>
-      <>
+      <ActivityProvider>
         <App />
-        <Toaster position="top-right" />
-      </>
+      </ActivityProvider>
     </AuthProvider>
-  </StrictMode>,
+  </React.StrictMode>,
 );

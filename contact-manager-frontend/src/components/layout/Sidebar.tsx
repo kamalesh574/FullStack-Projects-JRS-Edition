@@ -58,15 +58,9 @@ const Sidebar = () => {
           <span className="font-medium">Activity Log</span>
         </NavLink>
 
-        <NavLink to="/data" className={navLinkClass}>
-          <FaDatabase className="text-lg" />
-          <span className="font-medium">Data Management</span>
-        </NavLink>
+        
 
-        <NavLink to="/settings" className={navLinkClass}>
-          <FaCog className="text-lg" />
-          <span className="font-medium">Settings</span>
-        </NavLink>
+        
       </nav>
 
       {/* Footer Info */}
