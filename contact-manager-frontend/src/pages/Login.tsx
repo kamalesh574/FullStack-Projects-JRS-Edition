@@ -1,23 +1,34 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 import { setAuth } from "../api/axios";
 
 const Login = () => {
   const navigate = useNavigate();
-
+  const { setAuthState } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (username === "admin" && password === "admin123") {
-      setAuth(username, password);
-      navigate("/dashboard");
-    } else {
-      alert("Invalid credentials");
-    }
-  };
+  try {
+    setAuth(username, password);
+
+    const response = await api.get("/auth/me");
+
+    setAuthState({
+      username: response.data.username,
+      role: response.data.role,
+    });
+
+    navigate("/dashboard");
+
+  } catch {
+    alert("Invalid credentials");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-blue-900">

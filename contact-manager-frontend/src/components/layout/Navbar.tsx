@@ -1,11 +1,34 @@
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+
 const Navbar = () => {
+  const { auth, setAuthState } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    setAuthState({ username: null, role: null });
+    navigate("/");
+  };
+
   return (
-    <div className="bg-card p-4 rounded-lg flex justify-between items-center">
-      <h2 className="text-lg font-semibold">Dashboard</h2>
-      <div className="text-sm text-slate-400">
-        Admin Panel
+    <header className="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center">
+      <div className="text-lg font-semibold">
+        Welcome, {auth.username}
       </div>
-    </div>
+
+      <div className="flex items-center gap-4">
+        <span className="px-3 py-1 text-sm rounded-full bg-blue-600">
+          {auth.role}
+        </span>
+
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition"
+        >
+          Logout
+        </button>
+      </div>
+    </header>
   );
 };
 
